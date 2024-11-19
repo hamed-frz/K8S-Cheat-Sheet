@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-canary
+  labels:
+    app: app
+    version: canary
+spec:
+  replicas: 1 # Start with 1 replica for a small traffic subset
+  selector:
+    matchLabels:
+      app: app
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: app
+        version: canary
+    spec:
+      containers:
+      - name: app-container
+        image: your-docker-image:v2 # Replace with your actual canary image
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
